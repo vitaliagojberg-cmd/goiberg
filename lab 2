@@ -1,0 +1,78 @@
+import java.io.*;  // для роботи з введенням/виведенням
+
+public class laboratorna_2 {
+
+    // Метод для зчитування рядка з клавіатури
+    public static String getString() throws IOException {
+        InputStreamReader isr = new InputStreamReader(System.in);
+        BufferedReader br = new BufferedReader(isr);
+        String s = br.readLine();
+        return s;
+    }
+
+    // Метод для зчитування дійсного (float) числа
+    public static float getFloat() throws IOException {
+        String s = getString();
+        return Float.parseFloat(s);
+    }
+
+    // Метод для зчитування цілого числа
+    public static int getInt() throws IOException {
+        String s = getString();
+        return Integer.parseInt(s);
+    }
+
+    // Метод ділення
+    public static float div(float a, float b) {
+        return a / b;
+    }
+
+    // Метод множення
+    public static float multi(float a, float b) {
+        return a * b;
+    }
+
+    // Метод суми
+    public static float sum(float a, float b) {
+        return a + b;
+    }
+
+    // Метод різниці
+    public static float dif(float a, float b) {
+        return a - b;
+    }
+
+    public static void main(String[] args) throws IOException {
+
+        System.out.println("Enter the first number:");
+        float a1 = getFloat(); // Читання дійсного числа
+
+        System.out.println("Enter the second number:");
+        float a2 = getFloat(); // Читання другого числа
+
+        // Порівняння чисел
+        if (a1 > a2)
+            System.out.println(a1 + " more than " + a2);
+        else if (a1 < a2)
+            System.out.println(a1 + " fewer than " + a2);
+        else
+            System.out.println(" the numbers are equal ");
+
+        // Цикл for — збільшення суми й різниці
+        float s = sum(a1, a2);
+        float d = dif(a1, a2);
+        for (int i = 1; i <= 10; i++) {
+            s *= 1.1; // збільшуємо на 10%
+        }
+        for (int i = 1; i <= 5; i++) {
+            d *= 1.05; // збільшуємо на 5%
+        }
+
+        System.out.println(" The sum after the loop: " + s);
+        System.out.println(" The difference after the loop: " + d);
+
+        // Перевірка методів
+        System.out.println(" Multiplication: " + multi(a1, a2));
+        System.out.println(" Division: " + div(a1, a2));
+    }
+}
