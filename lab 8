@@ -1,0 +1,162 @@
+// laboratorna_8.java
+// Laboratory work #8 — HashTable with linear probing
+
+import java.util.Scanner;
+import java.util.Arrays;
+
+class HashTable {
+    private int[] table;
+    private int nElems;
+    private int size;
+
+    public HashTable(int s) {
+        size = s;
+        table = new int[size];
+        Arrays.fill(table, -1); // -1 означає порожню комірку
+        nElems = 0;
+    }
+
+    // --- Hash function ---
+    private int hashFunc(int key) {
+        return key % size;
+    }
+
+    // --- Insert with linear probing ---
+    public void insert(int key) {
+        if ((double)nElems / size > 0.5) {
+            rehash();
+        }
+
+        int hashVal = hashFunc(key);
+        while (table[hashVal] != -1) { // лінійне зондування
+            hashVal = (hashVal + 1) % size;
+        }
+        table[hashVal] = key;
+        nElems++;
+    }
+
+    // --- Find key ---
+    public boolean find(int key) {
+        int hashVal = hashFunc(key);
+        int start = hashVal;
+        while (table[hashVal] != -1) {
+            if (table[hashVal] == key) return true;
+            hashVal = (hashVal + 1) % size;
+            if (hashVal == start) break; // пройшли весь масив
+        }
+        return false;
+    }
+
+    // --- Delete key ---
+    public boolean delete(int key) {
+        int hashVal = hashFunc(key);
+        int start = hashVal;
+        while (table[hashVal] != -1) {
+            if (table[hashVal] == key) {
+                table[hashVal] = -1;
+                nElems--;
+                return true;
+            }
+            hashVal = (hashVal + 1) % size;
+            if (hashVal == start) break;
+        }
+        return false;
+    }
+
+    // --- Rehash table to new size (≈2x) ---
+    private void rehash() {
+        int newSize = size * 2 + 1;
+        int[] oldTable = table;
+        table = new int[newSize];
+        Arrays.fill(table, -1);
+        size = newSize;
+        nElems = 0;
+
+        for (int key : oldTable) {
+            if (key != -1) insert(key); // повторне вставлення
+        }
+        System.out.println("Rehashing done. New table size: " + size);
+    }
+
+    // --- Display table ---
+    public void displayTable() {
+        System.out.println("HashTable contents:");
+        for (int i = 0; i < size; i++) {
+            if (table[i] != -1) System.out.println(i + ": " + table[i]);
+            else System.out.println(i + ": ---");
+        }
+    }
+
+    // --- Calculate average group size ---
+    public double averageGroupSize() {
+        int sumGroups = 0;
+        int countGroups = 0;
+        int i = 0;
+
+        while (i < size) {
+            if (table[i] != -1) {
+                int groupSize = 0;
+                while (i < size && table[i] != -1) {
+                    groupSize++;
+                    i++;
+                }
+                sumGroups += groupSize;
+                countGroups++;
+            } else {
+                i++;
+            }
+        }
+
+        return countGroups > 0 ? (double) sumGroups / countGroups : 0;
+    }
+}
+
+// --- Main Application ---
+public class laboratorna_8 {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        System.out.print("Enter hash table size: ");
+        int size = sc.nextInt();
+        HashTable table = new HashTable(size);
+
+        System.out.print("Enter number of elements to insert: ");
+        int n = sc.nextInt();
+
+        System.out.println("Choose input method:");
+        System.out.println("1 - Manual input");
+        System.out.println("2 - Random input");
+        int method = sc.nextInt();
+
+        if (method == 1) {
+            for (int i = 0; i < n; i++) {
+                System.out.print("Enter element " + (i + 1) + ": ");
+                int key = sc.nextInt();
+                table.insert(key);
+            }
+        } else {
+            for (int i = 0; i < n; i++) {
+                int key = (int)(Math.random() * 1000);
+                table.insert(key);
+                System.out.println("Inserted: " + key);
+            }
+        }
+
+        table.displayTable();
+
+        // --- Average group size ---
+        double avgGroupSize = table.averageGroupSize();
+        System.out.println("Average group size: " + avgGroupSize);
+
+        // --- Test find/delete ---
+        System.out.print("Enter key to find: ");
+        int keyFind = sc.nextInt();
+        System.out.println(table.find(keyFind) ? "Found" : "Not found");
+
+        System.out.print("Enter key to delete: ");
+        int keyDel = sc.nextInt();
+        System.out.println(table.delete(keyDel) ? "Deleted" : "Not found");
+
+        table.displayTable();
+    }
+}
