@@ -1,0 +1,101 @@
+import java.util.Random;
+import java.util.Scanner;
+
+// ------------------- Class representing a list node -------------------
+class Link {
+    public int data;
+    public Link next;
+
+    public Link(int d) {
+        data = d;
+        next = null;
+    }
+
+    public void displayLink() {
+        System.out.print(data + " ");
+    }
+}
+
+// ------------------- Singly Linked List -------------------
+class LinkList {
+    private Link first;
+
+    public LinkList() {
+        first = null;
+    }
+
+    public boolean isEmpty() {
+        return (first == null);
+    }
+
+    // Insert at the beginning
+    public void insertFirst(int d) {
+        Link newLink = new Link(d);
+        newLink.next = first;
+        first = newLink;
+    }
+
+    // Fill the list with random values
+    public void fillRandom(int count) {
+        Random rand = new Random();
+        for (int i = 0; i < count; i++) {
+            insertFirst(rand.nextInt(100)); // from 0 to 99
+        }
+    }
+
+    // Display a certain number of elements
+    public void display(int count) {
+        Link current = first;
+        int i = 0;
+        while (current != null && i < count) {
+            current.displayLink();
+            current = current.next;
+            i++;
+        }
+        System.out.println();
+    }
+
+    // Find an element by key
+    public Link find(int key) {
+        Link current = first;
+        while (current != null && current.data != key) {
+            current = current.next;
+        }
+        return current;
+    }
+
+    // Delete an element by key
+    public Link delete(int key) {
+        Link current = first;
+        Link previous = first;
+
+        while (current != null && current.data != key) {
+            previous = current;
+            current = current.next;
+        }
+
+        if (current == null)
+            return null;
+
+        if (current == first)
+            first = first.next;
+        else
+            previous.next = current.next;
+
+        return current;
+    }
+}
+
+// ------------------- Linked list with first and last references -------------------
+class FirstLastList {
+    private Link first;
+    private Link last;
+
+    public FirstLastList() {
+        first = null;
+        last = null;
+    }
+
+    public boolean isEmpty() {
+        return first == null;
+    }
