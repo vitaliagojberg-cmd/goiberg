@@ -1,0 +1,247 @@
+ // laboratorna_7.java
+// Laboratory work #7 — BinaryTree demonstration
+
+import java.util.Scanner;
+import java.util.Stack;
+
+// --- Node class ---
+class Node {
+    public int iData;
+    public Node leftChild;
+    public Node rightChild;
+
+    public Node(int id) {
+        iData = id;
+        leftChild = null;
+        rightChild = null;
+    }
+
+    public void displayNode() {
+        System.out.print(iData + " ");
+    }
+}
+
+// --- Binary Tree class ---
+class BinaryTree {
+    private Node root;
+
+    public BinaryTree() {
+        root = null;
+    }
+
+    // --- Insert ---
+    public void insert(int id) {
+        Node newNode = new Node(id);
+        if (root == null) {
+            root = newNode;
+            return;
+        }
+        Node current = root;
+        Node parent;
+        while (true) {
+            parent = current;
+            if (id < current.iData) {
+                current = current.leftChild;
+                if (current == null) {
+                    parent.leftChild = newNode;
+                    return;
+                }
+            } else {
+                current = current.rightChild;
+                if (current == null) {
+                    parent.rightChild = newNode;
+                    return;
+                }
+            }
+        }
+    }
+
+    // --- Find ---
+    public Node find(int key) {
+        Node current = root;
+        while (current != null) {
+            if (current.iData == key) return current;
+            current = (key < current.iData) ? current.leftChild : current.rightChild;
+        }
+        return null;
+    }
+
+    // --- Min ---
+    public Node findMin() {
+        Node current = root;
+        if (current == null) return null;
+        while (current.leftChild != null) {
+            current = current.leftChild;
+        }
+        return current;
+    }
+
+    // --- Max ---
+    public Node findMax() {
+        Node current = root;
+        if (current == null) return null;
+        while (current.rightChild != null) {
+            current = current.rightChild;
+        }
+        return current;
+    }
+
+    // --- Delete ---
+    public boolean delete(int key) {
+        Node current = root;
+        Node parent = root;
+        boolean isLeftChild = true;
+
+        while (current != null && current.iData != key) {
+            parent = current;
+            if (key < current.iData) {
+                isLeftChild = true;
+                current = current.leftChild;
+            } else {
+                isLeftChild = false;
+                current = current.rightChild;
+            }
+        }
+
+        if (current == null) return false; // не знайдено
+
+        // випадок 1: немає дітей
+        if (current.leftChild == null && current.rightChild == null) {
+            if (current == root) root = null;
+            else if (isLeftChild) parent.leftChild = null;
+            else parent.rightChild = null;
+        }
+        // випадок 2: немає лівого дитини
+        else if (current.leftChild == null) {
+            if (current == root) root = current.rightChild;
+            else if (isLeftChild) parent.leftChild = current.rightChild;
+            else parent.rightChild = current.rightChild;
+        }
+        // випадок 3: немає правого дитини
+        else if (current.rightChild == null) {
+            if (current == root) root = current.leftChild;
+            else if (isLeftChild) parent.leftChild = current.leftChild;
+            else parent.rightChild = current.leftChild;
+        }
+        // випадок 4: дві дитини
+        else {
+            Node successor = getSuccessor(current);
+            if (current == root) root = successor;
+            else if (isLeftChild) parent.leftChild = successor;
+            else parent.rightChild = successor;
+            successor.leftChild = current.leftChild;
+        }
+        return true;
+    }
+
+    private Node getSuccessor(Node delNode) {
+        Node successorParent = delNode;
+        Node successor = delNode;
+        Node current = delNode.rightChild;
+
+        while (current != null) {
+            successorParent = successor;
+            successor = current;
+            current = current.leftChild;
+        }
+
+        if (successor != delNode.rightChild) {
+            successorParent.leftChild = successor.rightChild;
+            successor.rightChild = delNode.rightChild;
+        }
+
+        return successor;
+    }
+
+    // --- Display tree in structured form ---
+    public void displayTree() {
+        Stack<Node> globalStack = new Stack<>();
+        globalStack.push(root);
+        int nBlanks = 32;
+        boolean isRowEmpty = false;
+        System.out.println("......................................................");
+        while (!isRowEmpty) {
+            Stack<Node> localStack = new Stack<>();
+            isRowEmpty = true;
+            for (int i = 0; i < nBlanks; i++)
+                System.out.print(' ');
+
+            while (!globalStack.isEmpty()) {
+                Node temp = globalStack.pop();
+                if (temp != null) {
+                    System.out.print(temp.iData);
+                    localStack.push(temp.leftChild);
+                    localStack.push(temp.rightChild);
+                    if (temp.leftChild != null || temp.rightChild != null)
+                        isRowEmpty = false;
+                } else {
+                    System.out.print("--");
+                    localStack.push(null);
+                    localStack.push(null);
+                }
+                for (int i = 0; i < nBlanks * 2 - 2; i++)
+                    System.out.print(' ');
+            }
+            System.out.println();
+            nBlanks /= 2;
+            while (!localStack.isEmpty())
+                globalStack.push(localStack.pop());
+        }
+        System.out.println("......................................................");
+    }
+}
+
+// --- Main Application ---
+public class laboratorna_7 {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        BinaryTree tree = new BinaryTree();
+
+        while (true) {
+            System.out.println("\nBinaryTree Menu:");
+            System.out.println("1 - Insert element");
+            System.out.println("2 - Find element");
+            System.out.println("3 - Delete element");
+            System.out.println("4 - Display tree");
+            System.out.println("5 - Find Min");
+            System.out.println("6 - Find Max");
+            System.out.println("0 - Exit");
+            System.out.print("Choice: ");
+            int choice = sc.nextInt();
+
+            switch (choice) {
+                case 1 -> {
+                    System.out.print("Enter value to insert: ");
+                    int value = sc.nextInt();
+                    tree.insert(value);
+                }
+                case 2 -> {
+                    System.out.print("Enter value to find: ");
+                    int value = sc.nextInt();
+                    Node found = tree.find(value);
+                    System.out.println(found != null ? "Found: " + found.iData : "Not found");
+                }
+                case 3 -> {
+                    System.out.print("Enter value to delete: ");
+                    int value = sc.nextInt();
+                    boolean deleted = tree.delete(value);
+                    System.out.println(deleted ? "Deleted successfully" : "Value not found");
+                }
+                case 4 -> tree.displayTree();
+                case 5 -> {
+                    Node min = tree.findMin();
+                    System.out.println(min != null ? "Min value: " + min.iData : "Tree is empty");
+                }
+                case 6 -> {
+                    Node max = tree.findMax();
+                    System.out.println(max != null ? "Max value: " + max.iData : "Tree is empty");
+                }
+                case 0 -> {
+                    System.out.println("Exiting...");
+                    return;
+                }
+                default -> System.out.println("Invalid choice!");
+            }
+        }
+    }
+}
