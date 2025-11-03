@@ -1,0 +1,40 @@
+import java.io.BufferedReader;
+ import java.io.IOException;
+ import java.io.InputStreamReader;
+
+  public class laboratorna_1 {
+
+    // Метод для зчитування рядка з клавіатури
+    public static String getString() throws IOException {
+        InputStreamReader istr = new InputStreamReader(System.in);
+        BufferedReader br = new BufferedReader(istr);
+        String s = br.readLine();
+        return s;
+    }
+
+    // Метод для зчитування дійсного числа
+    public static float getFloat() throws IOException {
+        String s = getString();
+        return Float.parseFloat(s);
+    }
+
+    public static void main(String[] args) throws IOException {
+        System.out.println("Enter the first real number: ");
+        float a1 = getFloat(); // Читання першого числа
+
+        System.out.println("Enter the second real number: ");
+        float a2 = getFloat(); // Читання другого числа
+
+        float multiplication = a1 * a2;
+        float division = 0;
+
+        System.out.println("Multiplication result: " + multiplication);
+
+        if (a2 != 0) {
+            division = a1 / a2;
+            System.out.println("Division result: " + division);
+        } else {
+            System.out.println("Division by zero is not possible.");
+        }
+    }
+}
