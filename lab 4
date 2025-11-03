@@ -1,0 +1,127 @@
+ // laboratorna_4.java
+// Laboratory work #4 — Stack projects in Java
+
+import java.util.Scanner;
+import java.util.Stack;
+
+public class laboratorna_4 {
+
+    // --- Project 1: Stack with user input ---
+    public static void stackProject(Scanner sc) {
+        Stack<Integer> stack = new Stack<>();
+        System.out.print("Enter the number of elements to push onto the stack: ");
+        int pushCount = sc.nextInt();
+        for (int i = 0; i < pushCount; i++) {
+            System.out.print("Enter element " + (i + 1) + ": ");
+            int value = sc.nextInt();
+            stack.push(value);
+        }
+
+        System.out.print("Enter the number of elements to pop from the stack: ");
+        int popCount = sc.nextInt();
+
+        System.out.println("Popped elements:");
+        for (int i = 0; i < popCount && !stack.isEmpty(); i++) {
+            System.out.print(stack.pop() + " ");
+        }
+        System.out.println();
+    }
+
+    // --- Project 2: EvenOdd ---
+    public static void evenOddProject(Scanner sc) {
+        Stack<Integer> stack = new Stack<>();
+        System.out.print("Enter integers separated by space: ");
+        sc.nextLine(); // clear buffer
+        String[] input = sc.nextLine().split(" ");
+        for (String s : input) {
+            stack.push(Integer.parseInt(s));
+        }
+
+        Stack<Integer> even = new Stack<>();
+        Stack<Integer> odd = new Stack<>();
+
+        while (!stack.isEmpty()) {
+            int num = stack.pop();
+            if (num % 2 == 0) {
+                even.push(num);
+            } else {
+                odd.push(num);
+            }
+        }
+
+        System.out.println("Even numbers: " + even);
+        System.out.println("Odd numbers: " + odd);
+    }
+
+    // --- Project 3: LetterNumber ---
+    public static void letterNumberProject(Scanner sc) {
+        Stack<Character> letters = new Stack<>();
+        Stack<Integer> numbers = new Stack<>();
+
+        System.out.print("Enter a string containing letters and numbers: ");
+        sc.nextLine(); // clear buffer
+        String input = sc.nextLine();
+
+        for (char ch : input.toCharArray()) {
+            if (Character.isDigit(ch)) {
+                numbers.push(Character.getNumericValue(ch));
+            } else if (Character.isLetter(ch)) {
+                letters.push(ch);
+            }
+        }
+
+        System.out.println("Letters stack: " + letters);
+        System.out.println("Numbers stack: " + numbers);
+    }
+
+    // --- Project 4: VowelConsonant ---
+    public static void vowelConsonantProject(Scanner sc) {
+        Stack<Character> vowels = new Stack<>();
+        Stack<Character> consonants = new Stack<>();
+
+        System.out.print("Enter a string: ");
+        sc.nextLine(); // clear buffer
+        String input = sc.nextLine().toLowerCase();
+
+        for (char ch : input.toCharArray()) {
+            if (Character.isLetter(ch)) {
+                if ("aeiou".indexOf(ch) >= 0) {
+                    vowels.push(ch);
+                } else {
+                    consonants.push(ch);
+                }
+            }
+        }
+
+        System.out.println("Vowels stack: " + vowels);
+        System.out.println("Consonants stack: " + consonants);
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        while (true) {
+            System.out.println("\nChoose a project:");
+            System.out.println("1 - Stack project with push/pop");
+            System.out.println("2 - EvenOdd project");
+            System.out.println("3 - LetterNumber project");
+            System.out.println("4 - VowelConsonant project");
+            System.out.println("0 - Exit");
+            System.out.print("Your choice: ");
+            int choice = sc.nextInt();
+
+            switch (choice) {
+                case 1 -> stackProject(sc);
+                case 2 -> evenOddProject(sc);
+                case 3 -> letterNumberProject(sc);
+                case 4 -> vowelConsonantProject(sc);
+                case 0 -> {
+                    System.out.println("Exiting program...");
+                    sc.close();
+                    return;
+                }
+                default -> System.out.println("Invalid choice! Try again.");
+            }
+        }
+    }
+}
