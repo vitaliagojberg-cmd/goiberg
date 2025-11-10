@@ -1,0 +1,619 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package com.mycompany.matissedemo;
+
+/**
+ *
+ * @author user
+ */
+public abstract class Account {
+    protected double balance;
+
+    public Account(double balance) {
+        this.balance = balance;
+    }
+
+    public double getBalance() { return balance; }
+
+    public boolean deposit(double amount) {
+        if (amount <= 0) return false;
+        balance += amount;
+        return true;
+    }
+
+    public abstract boolean withdraw(double amount);
+
+    public abstract String getAccountType();
+
+    @Override
+    public String toString() {
+        return String.format("%s: $%.2f", getAccountType(), getBalance());
+    }
+}
+
+
+
+
+
+
+
+
+
+
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package com.mycompany.matissedemo;
+
+/**
+ *
+ * @author user
+ */
+import java.util.ArrayList;
+import java.util.List;
+
+public class Bank {
+    private static final List<Customer> customers = new ArrayList<>();
+
+    private Bank() {}
+
+    public static void clear() { customers.clear(); }
+
+    public static void addCustomer(Customer c) { customers.add(c); }
+
+    public static Customer addOrGetCustomer(String first, String last) {
+        for (Customer c : customers) {
+            if (c.getFirstName().equalsIgnoreCase(first) && c.getLastName().equalsIgnoreCase(last)) {
+                return c;
+            }
+        }
+        Customer c = new Customer(first, last);
+        customers.add(c);
+        return c;
+    }
+
+    public static Customer getCustomer(int idx) {
+        if (idx < 0 || idx >= customers.size()) return null;
+        return customers.get(idx);
+    }
+
+    public static int getNumOfCustomers() { return customers.size(); }
+
+    public static List<Customer> getCustomers() { return customers; }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package com.mycompany.matissedemo;
+
+/**
+ *
+ * @author user
+ */
+public class CheckingAccount extends Account {
+    private double overdraft; // allowed overdraft amount
+
+    public CheckingAccount(double balance) {
+        this(balance, 0.0);
+    }
+
+    public CheckingAccount(double balance, double overdraft) {
+        super(balance);
+        this.overdraft = overdraft;
+    }
+
+    @Override
+    public boolean withdraw(double amount) {
+        if (amount <= 0) return false;
+        if (balance + overdraft >= amount) {
+            balance -= amount;
+            return true;
+        }
+        return false;
+    }
+
+    public double getOverdraft() { return overdraft; }
+
+    @Override
+    public String getAccountType() { return "Checking"; }
+
+    @Override
+    public String toString() {
+        return String.format("%s: $%.2f, overdraft: $%.2f", getAccountType(), balance, overdraft);
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package com.mycompany.matissedemo;
+
+/**
+ *
+ * @author user
+ */
+import java.util.ArrayList;
+import java.util.List;
+
+public class Customer {
+    private final String firstName;
+    private final String lastName;
+    private final List<Account> accounts = new ArrayList<>();
+
+    public Customer(String firstName, String lastName) {
+        this.firstName = firstName.trim();
+        this.lastName = lastName.trim();
+    }
+
+    public String getFirstName() { return firstName; }
+    public String getLastName() { return lastName; }
+
+    public void addAccount(Account a) { accounts.add(a); }
+
+    public Account getAccount(int index) {
+        if (index < 0 || index >= accounts.size()) return null;
+        return accounts.get(index);
+    }
+
+    public int getNumberOfAccounts() { return accounts.size(); }
+
+    public List<Account> getAccounts() { return accounts; }
+
+    @Override
+    public String toString() {
+        return firstName + " " + lastName;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package com.mycompany.matissedemo;
+
+/**
+ *
+ * @author user
+ */
+public class CustomerReport {
+    public String generateReport() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("CUSTOMERS REPORT\n");
+        sb.append("===============================\n");
+        for (int i = 0; i < Bank.getNumOfCustomers(); i++) {
+            Customer c = Bank.getCustomer(i);
+            sb.append(String.format("%d) %s\n", i + 1, c.toString()));
+            for (int j = 0; j < c.getNumberOfAccounts(); j++) {
+                Account a = c.getAccount(j);
+                sb.append(String.format("    #%d - %s\n", j, a.toString()));
+            }
+            sb.append("\n");
+        }
+        return sb.toString();
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package com.mycompany.matissedemo;
+
+/**
+ *
+ * @author user
+ */
+import java.io.*;
+import java.util.*;
+
+public class DataSource {
+    private final String filename;
+
+    public DataSource(String filename) {
+        this.filename = filename;
+    }
+
+    public void loadData() {
+        Bank.clear();
+        File f = new File(filename);
+        if (!f.exists()) {
+            System.out.println("Data file not found: " + filename + "  — using default sample data.");
+            loadSampleData();
+            return;
+        }
+        try (BufferedReader br = new BufferedReader(new FileReader(f))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                line = line.trim();
+                if (line.isEmpty() || line.startsWith("#")) continue;
+                // expected: First,Last,Type,Balance,Extra?
+                String[] parts = line.split(",");
+                if (parts.length < 4) continue;
+                String first = parts[0].trim();
+                String last = parts[1].trim();
+                String type = parts[2].trim();
+                double balance = Double.parseDouble(parts[3].trim());
+                Customer c = Bank.addOrGetCustomer(first, last);
+                if (type.equalsIgnoreCase("C")) {
+                    double overdraft = 0.0;
+                    if (parts.length >= 5) {
+                        try { overdraft = Double.parseDouble(parts[4].trim()); } catch (Exception ex) {}
+                    }
+                    c.addAccount(new CheckingAccount(balance, overdraft));
+                } else { // assume Savings
+                    double rate = 0.0;
+                    if (parts.length >= 5) {
+                        try { rate = Double.parseDouble(parts[4].trim()); } catch (Exception ex) {}
+                    }
+                    c.addAccount(new SavingsAccount(balance, rate));
+                }
+            }
+            System.out.println("Loaded data from " + filename + " (" + Bank.getNumOfCustomers() + " customers).");
+        } catch (IOException e) {
+            e.printStackTrace();
+            loadSampleData();
+        }
+    }
+
+    private void loadSampleData() {
+        // fallback sample
+        Customer c1 = Bank.addOrGetCustomer("John", "Doe");
+        c1.addAccount(new CheckingAccount(1500, 200));
+        c1.addAccount(new SavingsAccount(1000, 5));
+
+        Customer c2 = Bank.addOrGetCustomer("Jane", "Smith");
+        c2.addAccount(new CheckingAccount(800, 100));
+
+        Customer c3 = Bank.addOrGetCustomer("Bob", "Brown");
+        c3.addAccount(new SavingsAccount(1200, 3));
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package com.mycompany.matissedemo;
+
+/**
+ *
+ * @author user
+ */
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+
+public class SWINGDemo extends JFrame {
+
+    private final JComboBox<String> customerCombo;
+    private final JComboBox<String> accountCombo;
+    private final JButton showBtn;
+    private final JButton reportBtn;
+    private final JButton aboutBtn;
+    private final JButton depositBtn;
+    private final JButton withdrawBtn;
+    private final JTextArea outputArea;
+    private final JLabel statusBar;
+
+    public SWINGDemo() {
+        super("MyBank Clients");
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setSize(560, 420);
+        setLocationRelativeTo(null);
+        setLayout(new BorderLayout(6,6));
+        setResizable(false);
+
+        // Top panel: combo and buttons
+        JPanel top = new JPanel(new BorderLayout(6,6));
+        JPanel selectPanel = new JPanel();
+        customerCombo = new JComboBox<>();
+        accountCombo = new JComboBox<>();
+        accountCombo.setPreferredSize(new Dimension(220, 26));
+        customerCombo.setPreferredSize(new Dimension(220, 26));
+        selectPanel.add(customerCombo);
+        selectPanel.add(accountCombo);
+
+        JPanel buttonsPanel = new JPanel(new GridLayout(3,1,4,4));
+        showBtn = new JButton("Show");
+        reportBtn = new JButton("Report");
+        aboutBtn = new JButton("About");
+        buttonsPanel.add(showBtn);
+        buttonsPanel.add(reportBtn);
+        buttonsPanel.add(aboutBtn);
+
+        top.add(selectPanel, BorderLayout.CENTER);
+        top.add(buttonsPanel, BorderLayout.EAST);
+
+        add(top, BorderLayout.NORTH);
+
+        // center text area
+        outputArea = new JTextArea();
+        outputArea.setEditable(false);
+        outputArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        JScrollPane sp = new JScrollPane(outputArea);
+        sp.setPreferredSize(new Dimension(520, 240));
+        add(sp, BorderLayout.CENTER);
+
+        // right-bottom deposit/withdraw small panel
+        JPanel bottomPanel = new JPanel(new BorderLayout());
+        JPanel actionPanel = new JPanel();
+        depositBtn = new JButton("Deposit");
+        withdrawBtn = new JButton("Withdraw");
+        actionPanel.add(depositBtn);
+        actionPanel.add(withdrawBtn);
+        bottomPanel.add(actionPanel, BorderLayout.EAST);
+
+        statusBar = new JLabel(" Choose a client name and press 'Show' button");
+        statusBar.setBorder(BorderFactory.createEmptyBorder(4,6,4,6));
+        bottomPanel.add(statusBar, BorderLayout.CENTER);
+
+        add(bottomPanel, BorderLayout.SOUTH);
+
+        // wire actions
+        showBtn.addActionListener(e -> doShow());
+        reportBtn.addActionListener(e -> doReport());
+        aboutBtn.addActionListener(e -> doAbout());
+        depositBtn.addActionListener(e -> doDeposit());
+        withdrawBtn.addActionListener(e -> doWithdraw());
+        customerCombo.addActionListener(e -> updateAccountList());
+
+        // load data and fill combos
+        DataSource ds = new DataSource("test.dat");
+        ds.loadData();
+        refreshCustomerCombo();
+    }
+
+    private void refreshCustomerCombo() {
+        customerCombo.removeAllItems();
+        for (Customer c : Bank.getCustomers()) {
+            customerCombo.addItem(c.getFirstName() + " " + c.getLastName());
+        }
+        updateAccountList();
+    }
+
+    private void updateAccountList() {
+        accountCombo.removeAllItems();
+        int idx = customerCombo.getSelectedIndex();
+        if (idx >= 0) {
+            Customer c = Bank.getCustomer(idx);
+            for (int i = 0; i < c.getNumberOfAccounts(); i++) {
+                Account a = c.getAccount(i);
+                accountCombo.addItem(String.format("#%d - %s", i, a.toString()));
+            }
+        }
+    }
+
+    private void doShow() {
+        int idx = customerCombo.getSelectedIndex();
+        if (idx < 0) {
+            JOptionPane.showMessageDialog(this, "Please select a customer.");
+            return;
+        }
+        Customer c = Bank.getCustomer(idx);
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("<html><b>%s, customer #%d</b><br>---------------------------<br>",
+                c.getFirstName() + " " + c.getLastName(), idx + 1));
+        sb.append("<pre>");
+        sb.append("Accounts:\n");
+        for (int i = 0; i < c.getNumberOfAccounts(); i++) {
+            Account a = c.getAccount(i);
+            sb.append(String.format("#%d - %s\n", i, a.toString()));
+        }
+        sb.append("</pre></html>");
+        // Use plain text area -> strip html or just format plain:
+        StringBuilder plain = new StringBuilder();
+        plain.append(c.getFirstName()).append(" ").append(c.getLastName()).append(", customer #").append(idx+1).append("\n");
+        plain.append("---------------------------\n\n");
+        plain.append("Accounts:\n");
+        for (int i = 0; i < c.getNumberOfAccounts(); i++) {
+            Account a = c.getAccount(i);
+            plain.append(String.format("#%d - %s\n", i, a.toString()));
+        }
+        outputArea.setText(plain.toString());
+        statusBar.setText("Showing information for " + c.getFirstName() + " " + c.getLastName());
+        updateAccountList();
+    }
+
+    private void doReport() {
+        CustomerReport cr = new CustomerReport();
+        String report = cr.generateReport();
+        outputArea.setText(report);
+        statusBar.setText("Report generated");
+    }
+
+    private void doAbout() {
+        JOptionPane.showMessageDialog(this,
+                "MyBank GUI Demo\nAuthor: your name\nVersion: 1.0",
+                "About", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void doDeposit() {
+        int custIdx = customerCombo.getSelectedIndex();
+        int accIdx = accountCombo.getSelectedIndex();
+        if (custIdx < 0 || accIdx < 0) {
+            JOptionPane.showMessageDialog(this, "Select customer and account first.");
+            return;
+        }
+        String s = JOptionPane.showInputDialog(this, "Enter deposit amount:", "100");
+        if (s == null) return;
+        try {
+            double amount = Double.parseDouble(s);
+            Customer c = Bank.getCustomer(custIdx);
+            Account a = c.getAccount(accIdx);
+            if (a.deposit(amount)) {
+                doShow();
+                statusBar.setText(String.format("Deposited $%.2f to %s", amount, c.toString()));
+            } else {
+                JOptionPane.showMessageDialog(this, "Deposit failed.");
+            }
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Invalid amount.");
+        }
+    }
+
+    private void doWithdraw() {
+        int custIdx = customerCombo.getSelectedIndex();
+        int accIdx = accountCombo.getSelectedIndex();
+        if (custIdx < 0 || accIdx < 0) {
+            JOptionPane.showMessageDialog(this, "Select customer and account first.");
+            return;
+        }
+        String s = JOptionPane.showInputDialog(this, "Enter withdraw amount:", "50");
+        if (s == null) return;
+        try {
+            double amount = Double.parseDouble(s);
+            Customer c = Bank.getCustomer(custIdx);
+            Account a = c.getAccount(accIdx);
+            if (a.withdraw(amount)) {
+                doShow();
+                statusBar.setText(String.format("Withdrew $%.2f from %s", amount, c.toString()));
+            } else {
+                JOptionPane.showMessageDialog(this, "Insufficient funds or withdraw failed.");
+            }
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Invalid amount.");
+        }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            SWINGDemo d = new SWINGDemo();
+            d.setVisible(true);
+        });
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package com.mycompany.matissedemo;
+
+/**
+ *
+ * @author user
+ */
+public class SavingsAccount extends Account {
+    private double interestRate; // percent
+
+    public SavingsAccount(double balance, double interestRate) {
+        super(balance);
+        this.interestRate = interestRate;
+    }
+
+    @Override
+    public boolean withdraw(double amount) {
+        if (amount <= 0) return false;
+        if (balance >= amount) {
+            balance -= amount;
+            return true;
+        }
+        return false;
+    }
+
+    public double getInterestRate() { return interestRate; }
+
+    @Override
+    public String getAccountType() { return "Savings"; }
+
+    @Override
+    public String toString() {
+        return String.format("%s: $%.2f, interest rate: %.2f%%", getAccountType(), balance, interestRate);
+    }
+}
